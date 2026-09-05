@@ -13,6 +13,3 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
-
-[mvnw.cmd]
-end_of_line = crlf
