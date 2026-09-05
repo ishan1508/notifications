@@ -11,6 +11,7 @@ import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -60,6 +61,12 @@ public class GlobalExceptionHandler {
                 "Invalid request parameter",
                 "'" + exception.getName() + "' has an invalid value",
                 request);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ProblemDetail> handleUnreadableMessage(
+            HttpMessageNotReadableException exception, HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid request body", "The request body is malformed", request);
     }
 
     @ExceptionHandler({ResourceNotFoundException.class, NoResourceFoundException.class})
