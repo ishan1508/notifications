@@ -1,8 +1,8 @@
 # Notifications
 
-A Spring Boot foundation for notification APIs. It includes a thin
-controller/service/DTO example, request validation, consistent problem responses,
-Actuator health checks, tests, formatting checks, and CI.
+A Spring Boot foundation for notification APIs. It includes request validation,
+consistent problem responses, Actuator health checks, tests, formatting checks,
+and CI.
 
 ## Prerequisites
 
@@ -17,22 +17,7 @@ mvn spring-boot:run
 
 The application starts on `http://localhost:8080`.
 
-## API
-
-### Get a greeting
-
-```bash
-curl http://localhost:8080/api/greetings/Ishan
-```
-
-```json
-{"message":"Hello, Ishan!"}
-```
-
-Names are required and limited to 50 characters. Invalid requests return an
-`application/problem+json` response.
-
-### Check application health
+## Check application health
 
 ```bash
 curl http://localhost:8080/actuator/health
@@ -66,10 +51,7 @@ imports, and compiler warnings.
 
 ```text
 src/main/java/com/ishan/notifications/
-├── controller/   HTTP request and response handling
-├── dto/          API request and response types
-├── exception/    Consistent Problem Detail error handling
-└── service/      Business logic
+└── exception/    Consistent Problem Detail error handling
 ```
 
 When extending the application:
