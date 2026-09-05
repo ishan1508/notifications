@@ -1,4 +1,4 @@
-package com.ishan.machinecodingapi.controller;
+package com.ishan.notifications.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;

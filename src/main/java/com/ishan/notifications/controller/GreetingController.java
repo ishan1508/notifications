@@ -1,7 +1,7 @@
-package com.ishan.machinecodingapi.controller;
+package com.ishan.notifications.controller;
 
-import com.ishan.machinecodingapi.dto.GreetingResponse;
-import com.ishan.machinecodingapi.service.GreetingService;
+import com.ishan.notifications.dto.GreetingResponse;
+import com.ishan.notifications.service.GreetingService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.http.ResponseEntity;

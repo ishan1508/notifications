@@ -1,12 +1,12 @@
-package com.ishan.machinecodingapi;
+package com.ishan.notifications;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MachineCodingApiApplication {
+public class NotificationsApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(MachineCodingApiApplication.class, args);
+        SpringApplication.run(NotificationsApplication.class, args);
     }
 }

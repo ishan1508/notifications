@@ -1,4 +1,4 @@
-package com.ishan.machinecodingapi.exception;
+package com.ishan.notifications.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;

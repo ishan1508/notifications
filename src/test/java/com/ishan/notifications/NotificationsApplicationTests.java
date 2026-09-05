@@ -1,10 +1,10 @@
-package com.ishan.machinecodingapi;
+package com.ishan.notifications;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MachineCodingApiApplicationTests {
+class NotificationsApplicationTests {
 
     @Test
     void contextLoads() {}

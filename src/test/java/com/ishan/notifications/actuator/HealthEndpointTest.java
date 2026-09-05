@@ -1,4 +1,4 @@
-package com.ishan.machinecodingapi.actuator;
+package com.ishan.notifications.actuator;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;

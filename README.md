@@ -1,7 +1,7 @@
-# Machine Coding API
+# Notifications
 
-A small Spring Boot foundation for API-focused machine-coding exercises. It includes a
-thin controller/service/DTO example, request validation, consistent problem responses,
+A Spring Boot foundation for notification APIs. It includes a thin
+controller/service/DTO example, request validation, consistent problem responses,
 Actuator health checks, tests, formatting checks, and CI.
 
 ## Prerequisites
@@ -65,14 +65,14 @@ imports, and compiler warnings.
 ## Project structure
 
 ```text
-src/main/java/com/ishan/machinecodingapi/
+src/main/java/com/ishan/notifications/
 ├── controller/   HTTP request and response handling
 ├── dto/          API request and response types
 ├── exception/    Consistent Problem Detail error handling
 └── service/      Business logic
 ```
 
-When extending the starter:
+When extending the application:
 
 1. Model the API contract in `dto`.
 2. Keep business rules in `service`.

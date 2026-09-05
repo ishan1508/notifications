@@ -1,3 +1,3 @@
-package com.ishan.machinecodingapi.dto;
+package com.ishan.notifications.dto;
 
 public record GreetingResponse(String message) {}

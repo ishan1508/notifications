@@ -1,6 +1,6 @@
-package com.ishan.machinecodingapi.service;
+package com.ishan.notifications.service;
 
-import com.ishan.machinecodingapi.dto.GreetingResponse;
+import com.ishan.notifications.dto.GreetingResponse;
 import org.springframework.stereotype.Service;
 
 @Service
