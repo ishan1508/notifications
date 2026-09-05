@@ -34,11 +34,24 @@ curl -i -X POST http://localhost:8080/notifications \
 New notifications have a generated UUID, an `UNREAD` status, and a UTC creation
 timestamp.
 
-Retrieve one notification or filter the collection:
+Retrieve one notification:
 
 ```bash
 curl http://localhost:8080/notifications/{notificationId}
-curl 'http://localhost:8080/notifications?recipientId=user-123&status=UNREAD'
+```
+
+List one recipient's notifications newest-first. The `status` filter is optional,
+and `limit` defaults to 20 with a maximum of 100:
+
+```bash
+curl 'http://localhost:8080/notifications?recipientId=user-123&status=UNREAD&limit=20'
+```
+
+Collection responses include `items`, `hasMore`, and an opaque `nextCursor`. When
+`hasMore` is true, pass `nextCursor` unchanged to retrieve the next page:
+
+```bash
+curl 'http://localhost:8080/notifications?recipientId=user-123&status=UNREAD&limit=20&cursor={nextCursor}'
 ```
 
 Mark a notification as read:

@@ -2,14 +2,16 @@ package com.ishan.notifications.controller;
 
 import com.ishan.notifications.domain.NotificationStatus;
 import com.ishan.notifications.dto.CreateNotificationRequest;
+import com.ishan.notifications.dto.NotificationPageResponse;
 import com.ishan.notifications.dto.NotificationResponse;
 import com.ishan.notifications.dto.UpdateNotificationStatusRequest;
 import com.ishan.notifications.service.NotificationService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -48,14 +50,12 @@ public class NotificationController {
     }
 
     @GetMapping
-    public List<NotificationResponse> find(
-            @RequestParam(required = false)
-                    @Size(max = 100) @Pattern(regexp = "\\S(?:.*\\S)?", message = "must not be blank")
-                    String recipientId,
-            @RequestParam(required = false) NotificationStatus status) {
-        return service.find(Optional.ofNullable(recipientId), Optional.ofNullable(status)).stream()
-                .map(NotificationResponse::from)
-                .toList();
+    public NotificationPageResponse find(
+            @RequestParam @NotBlank @Size(max = 100) String recipientId,
+            @RequestParam(required = false) NotificationStatus status,
+            @RequestParam(required = false) @Size(max = 512) String cursor,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
+        return service.find(recipientId, Optional.ofNullable(status), Optional.ofNullable(cursor), limit);
     }
 
     @PatchMapping("/{notificationId}")

@@ -3,8 +3,11 @@ package com.ishan.notifications.service;
 import com.ishan.notifications.domain.Notification;
 import com.ishan.notifications.domain.NotificationStatus;
 import com.ishan.notifications.dto.CreateNotificationRequest;
+import com.ishan.notifications.dto.NotificationPageResponse;
+import com.ishan.notifications.dto.NotificationResponse;
 import com.ishan.notifications.exception.ResourceNotFoundException;
 import com.ishan.notifications.repository.NotificationRepository;
+import com.ishan.notifications.service.NotificationCursorCodec.Cursor;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Comparator;
@@ -21,10 +24,12 @@ public class NotificationService {
 
     private final NotificationRepository repository;
     private final Clock clock;
+    private final NotificationCursorCodec cursorCodec;
 
-    public NotificationService(NotificationRepository repository, Clock clock) {
+    public NotificationService(NotificationRepository repository, Clock clock, NotificationCursorCodec cursorCodec) {
         this.repository = repository;
         this.clock = clock;
+        this.cursorCodec = cursorCodec;
     }
 
     public Notification create(CreateNotificationRequest request) {
@@ -45,16 +50,24 @@ public class NotificationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Notification " + id + " was not found"));
     }
 
-    public List<Notification> find(Optional<String> recipientId, Optional<NotificationStatus> status) {
-        Optional<String> normalizedRecipientId = recipientId.map(String::trim);
-        return repository.findAll().stream()
-                .filter(notification -> normalizedRecipientId
-                        .map(value -> value.equals(notification.recipientId()))
-                        .orElse(true))
+    public NotificationPageResponse find(
+            String recipientId, Optional<NotificationStatus> status, Optional<String> cursor, int limit) {
+        Cursor position = cursor.map(cursorCodec::decode).orElse(null);
+        List<Notification> matches = repository.findAll().stream()
+                .filter(notification -> recipientId.trim().equals(notification.recipientId()))
                 .filter(notification ->
                         status.map(value -> value == notification.status()).orElse(true))
                 .sorted(NEWEST_FIRST)
+                .filter(notification -> isAfterCursor(notification, position))
+                .limit((long) limit + 1)
                 .toList();
+
+        boolean hasMore = matches.size() > limit;
+        List<Notification> page = hasMore ? matches.subList(0, limit) : matches;
+        String nextCursor = hasMore ? cursorCodec.encode(page.getLast()) : null;
+        List<NotificationResponse> items =
+                page.stream().map(NotificationResponse::from).toList();
+        return new NotificationPageResponse(items, nextCursor, hasMore);
     }
 
     public Notification updateStatus(UUID id, NotificationStatus status) {
@@ -68,5 +81,13 @@ public class NotificationService {
         if (!repository.deleteById(id)) {
             throw new ResourceNotFoundException("Notification " + id + " was not found");
         }
+    }
+
+    private boolean isAfterCursor(Notification notification, Cursor cursor) {
+        if (cursor == null) {
+            return true;
+        }
+        int timeComparison = notification.createdAt().compareTo(cursor.createdAt());
+        return timeComparison < 0 || timeComparison == 0 && notification.id().compareTo(cursor.id()) > 0;
     }
 }

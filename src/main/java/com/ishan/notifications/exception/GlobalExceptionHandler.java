@@ -13,6 +13,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -67,6 +68,21 @@ public class GlobalExceptionHandler {
     ResponseEntity<ProblemDetail> handleUnreadableMessage(
             HttpMessageNotReadableException exception, HttpServletRequest request) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid request body", "The request body is malformed", request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    ResponseEntity<ProblemDetail> handleMissingParameter(
+            MissingServletRequestParameterException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Missing request parameter",
+                "'" + exception.getParameterName() + "' is required",
+                request);
+    }
+
+    @ExceptionHandler(InvalidCursorException.class)
+    ResponseEntity<ProblemDetail> handleInvalidCursor(InvalidCursorException exception, HttpServletRequest request) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid pagination cursor", exception.getMessage(), request);
     }
 
     @ExceptionHandler({ResourceNotFoundException.class, NoResourceFoundException.class})

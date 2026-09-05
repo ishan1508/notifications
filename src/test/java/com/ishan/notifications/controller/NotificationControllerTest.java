@@ -2,6 +2,7 @@ package com.ishan.notifications.controller;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -11,6 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,8 +82,47 @@ class NotificationControllerTest {
 
         mockMvc.perform(get("/notifications").param("recipientId", recipientId).param("status", "UNREAD"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(unreadId));
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id").value(unreadId))
+                .andExpect(jsonPath("$.hasMore").value(false))
+                .andExpect(jsonPath("$.nextCursor").doesNotExist());
+    }
+
+    @Test
+    void paginatesNotificationsByCreationTime() throws Exception {
+        String recipientId = "user-" + UUID.randomUUID();
+        String oldestId = createNotification(recipientId, "FIRST", "First");
+        String middleId = createNotification(recipientId, "SECOND", "Second");
+        String newestId = createNotification(recipientId, "THIRD", "Third");
+
+        MvcResult firstPage = mockMvc.perform(
+                        get("/notifications").param("recipientId", recipientId).param("limit", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(2)))
+                .andExpect(jsonPath("$.items[0].id").value(newestId))
+                .andExpect(jsonPath("$.items[1].id").value(middleId))
+                .andExpect(jsonPath("$.hasMore").value(true))
+                .andExpect(jsonPath("$.nextCursor").isNotEmpty())
+                .andReturn();
+
+        String cursor = JsonPath.read(firstPage.getResponse().getContentAsString(), "$.nextCursor");
+        List<String> firstPageIds = JsonPath.read(firstPage.getResponse().getContentAsString(), "$.items[*].id");
+
+        MvcResult secondPage = mockMvc.perform(get("/notifications")
+                        .param("recipientId", recipientId)
+                        .param("limit", "2")
+                        .param("cursor", cursor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id").value(oldestId))
+                .andExpect(jsonPath("$.hasMore").value(false))
+                .andExpect(jsonPath("$.nextCursor").doesNotExist())
+                .andReturn();
+
+        List<String> secondPageIds = JsonPath.read(secondPage.getResponse().getContentAsString(), "$.items[*].id");
+        Set<String> allIds = new HashSet<>(firstPageIds);
+        allIds.addAll(secondPageIds);
+        assertEquals(Set.of(oldestId, middleId, newestId), allIds);
     }
 
     @Test
@@ -109,6 +152,21 @@ class NotificationControllerTest {
         mockMvc.perform(get("/notifications/not-a-uuid"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.title").value("Invalid request parameter"));
+    }
+
+    @Test
+    void rejectsInvalidPaginationRequests() throws Exception {
+        mockMvc.perform(get("/notifications"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Missing request parameter"));
+
+        mockMvc.perform(get("/notifications").param("recipientId", "user-1").param("limit", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Validation failed"));
+
+        mockMvc.perform(get("/notifications").param("recipientId", "user-1").param("cursor", "not-a-cursor"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid pagination cursor"));
     }
 
     @Test
